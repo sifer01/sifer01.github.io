@@ -64,7 +64,7 @@
     <a href="button.html">Panic Button</a>
     <a href="missingboyfriend.html">Missing Boyfriend Portal</a>
     <a href="cats.html">Unlimited Cat Gifs</a>
-<a href="/pollypocket/">Polly pocket fan site archive</a>
+<a href="/pollypocket/">PrincessPollyGames</a>
   </div>
 
   <h1>Unlimited Cute Cat Gifs</h1>
@@ -76,36 +76,41 @@
   }
 
   const gifContainer = document.getElementById("gifContainer");
+  let loading = false;
 
-  async function loadCats(count = 6) {
+  async function loadCats(count = 8) {
+    if (loading) return;
+    loading = true;
+    let ok = false;
     try {
       const res = await fetch(`https://api.thecatapi.com/v1/images/search?limit=${count}&mime_types=gif`);
+      if (!res.ok) throw new Error("API status " + res.status);
       const data = await res.json();
-
       data.forEach(cat => {
         const box = document.createElement("div");
         box.className = "gifBox";
-
         const img = document.createElement("img");
-        img.src = cat.url;
         img.alt = "Cute Cat";
-        img.loading = "lazy";
-
+        img.onerror = () => box.remove();
+        img.src = cat.url;
         box.appendChild(img);
         gifContainer.appendChild(box);
       });
+      ok = true;
     } catch (err) {
       console.error("Error loading cats:", err);
     }
+    loading = false;
+    if (ok && document.body.offsetHeight <= window.innerHeight + 300) {
+      setTimeout(() => loadCats(), 400);
+    }
   }
 
-  // Load first batch
   loadCats();
 
-  // Load more when scrolling near bottom
   window.addEventListener("scroll", () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
-      loadCats(4);
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
+      loadCats();
     }
   });
   </script>
