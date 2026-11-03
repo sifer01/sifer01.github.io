@@ -15,9 +15,7 @@
       flex-direction: column;
       align-items: center;
     }
-    h1 {
-      margin-top: 70px;
-    }
+    h1 { margin-top: 70px; }
     .navbar {
       position: absolute;
       top: 10px;
@@ -33,10 +31,7 @@
       color: #d77bff;
       font-size: 14px;
     }
-    .navbar a:hover {
-      color: #ffffff;
-      text-decoration: underline;
-    }
+    .navbar a:hover { color: #ffffff; text-decoration: underline; }
     #gifContainer {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -53,10 +48,7 @@
       justify-content: center;
       align-items: center;
     }
-    .gifBox img {
-      max-width: 100%;
-      border-radius: 8px;
-    }
+    .gifBox img { max-width: 100%; border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -64,7 +56,7 @@
     <a href="button.html">Panic Button</a>
     <a href="missingboyfriend.html">Missing Boyfriend Portal</a>
     <a href="cats.html">Unlimited Cat Gifs</a>
-<a href="/pollypocket/">PrincessPolly Games</a>
+    <a href="/pollypocket/">PrincessPolly Games</a>
   </div>
 
   <h1>Unlimited Cute Cat Gifs</h1>
@@ -72,48 +64,48 @@
 
   <script>
     if (sessionStorage.getItem("bunker_access") !== "true") {
-    window.location.href = "index.html";
-  }
-
-  const gifContainer = document.getElementById("gifContainer");
-  let loading = false;
-
-  async function loadCats(count = 8) {
-    if (loading) return;
-    loading = true;
-    let ok = false;
-    try {
-      const res = await fetch(`https://api.thecatapi.com/v1/images/search?limit=${count}&mime_types=gif`);
-      if (!res.ok) throw new Error("API status " + res.status);
-      const data = await res.json();
-      data.forEach(cat => {
-        const box = document.createElement("div");
-        box.className = "gifBox";
-        const img = document.createElement("img");
-        img.alt = "Cute Cat";
-        img.onerror = () => box.remove();
-        img.src = cat.url;
-        box.appendChild(img);
-        gifContainer.appendChild(box);
-      });
-      ok = true;
-    } catch (err) {
-      console.error("Error loading cats:", err);
+      window.location.href = "index.html";
     }
-    loading = false;
-    if (ok && document.body.offsetHeight <= window.innerHeight + 300) {
-      setTimeout(() => loadCats(), 400);
-    }
-  }
 
-  loadCats();
+    const gifContainer = document.getElementById("gifContainer");
+    let loading = false;
 
-  window.addEventListener("scroll", () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
-      loadCats();
+    async function loadCats(count = 8) {
+      if (loading) return;
+      loading = true;
+      let ok = false;
+      try {
+        const res = await fetch(`https://api.thecatapi.com/v1/images/search?limit=${count}&mime_types=gif`);
+        if (!res.ok) throw new Error("API status " + res.status);
+        const data = await res.json();
+        data.forEach(cat => {
+          const box = document.createElement("div");
+          box.className = "gifBox";
+          const img = document.createElement("img");
+          img.alt = "Cute Cat";
+          img.onerror = () => box.remove();
+          img.src = cat.url;
+          box.appendChild(img);
+          gifContainer.appendChild(box);
+        });
+        ok = true;
+      } catch (err) {
+        console.error("Error loading cats:", err);
+      }
+      loading = false;
+      // keep filling until the page is tall enough to scroll
+      if (ok && document.body.offsetHeight <= window.innerHeight + 300) {
+        setTimeout(() => loadCats(), 400);
+      }
     }
-  });
+
+    loadCats();
+
+    window.addEventListener("scroll", () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
+        loadCats();
+      }
+    });
   </script>
 </body>
-
 </html>
