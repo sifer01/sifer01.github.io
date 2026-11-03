@@ -1,0 +1,85 @@
+body {
+ background-color: #DA74F6;
+ overflow: hidden;
+ height: 600px;
+}
+
+.website {
+display: flex;
+justify-content: center;
+align-items: center;
+margin-top: 8.5%;
+scale: 127%;
+}
+
+#top_ad {
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ position: absolute;
+ margin-left: 244px;
+ margin-top: -182px;
+ height: 89;
+ width: 728;
+ scale: 95%;
+}
+
+.main_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: fit-content;
+  max-height: fit-content;
+}
+
+#navbar {
+    width: 694;
+    height: 83;
+    position: absolute;
+    margin-right: -0px;
+    margin-bottom: 490px;
+    scale: 105%;
+}
+
+#landing {
+    width: 694;
+    height: 413;
+    position: absolute;
+    margin-top: 20px;
+    scale: 105%;
+
+}
+
+#pinkcontainer {
+    width: 753;
+    height: 474;   
+}
+
+#footer {
+    width: 694;
+    height: 30;
+    margin-top: 481px;
+    position: absolute;
+    scale: 105%;   
+}
+
+#copyright{
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  margin-top: 57px;
+  margin-left: 1%;
+
+}
+a:link {
+  color: #ffecf6;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:visited {
+  color: #ffecf6;
+  background-color: transparent;
+  text-decoration: none;
+}

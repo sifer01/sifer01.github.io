@@ -1,0 +1,82 @@
+body {
+ background-color: #DA74F6;
+ overflow: hidden;
+ height: 600px;
+}
+
+.website {
+display: flex;
+justify-content: center;
+align-items: center;
+margin-top: 8.5%;
+scale: 125%;
+}
+
+#top_ad {
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ position: absolute;
+ margin-left: 244px;
+ margin-top: -193px;
+ height: 89;
+ width: 728;
+ scale: 95%;
+}
+
+.main_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: fit-content;
+  max-height: fit-content;
+}
+
+#navbar {
+    width: 694px;
+    height: 83px;
+    position: absolute;
+    margin-right: -0px;
+    margin-bottom: 498px;
+}
+
+#landing {
+    width: 694px;
+    height: 447px;
+    position: absolute;
+    margin-top: 20px;
+
+}
+
+#pinkcontainer {
+    width: 753px;
+    height: 474px;   
+}
+
+#footer {
+    width: 694px;
+    height: 30px;
+    margin-top: 496px;
+    position: absolute;   
+}
+
+#copyright{
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  margin-top: 35px;
+  margin-right: 240px;
+
+}
+
+/* Extra small devices (phones, 600px and down) */
+@media screen and (min-width: 390px) and (max-width: 844px) {
+
+    .website{
+        scale: 27%;
+        margin-left: -198px;
+        margin-top: -70px;
+        margin-bottom: auto;
+    }
+}

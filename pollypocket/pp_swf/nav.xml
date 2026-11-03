@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<navigation>
+	<tier1 label="Home" index="0" linkid="home" url="../home.html" />
+	<spacer height="2" color="0xFFFFFF" />
+	<tier1 label="PollyWorld Park" index="1" linkid="pollyworld" url="../park.html">
+		<tier2 label="Hotel Hunt" index="1_0" linkid="hotelhunt" url="../hotel.html" />
+		<spacer height="1.5" color="0xFF8000" />
+		<tier2 label="Dress n' Drive" index="1_1" linkid="dressndrive" url="../dress.html" />
+		<spacer height="1.5" color="0xFF8000" />
+		<tier2 label="Rock Star Makeover" index="1_2" linkid="rockinfashions" url="../fashion.html" />
+	</tier1>
+	<spacer height="2" color="0xFFFFFF" />
+	<tier1 label="Fab-tastic Garden" index="2" linkid="garden" url="../garden.html">
+		<tier2 label="Polly Wheels" index="2_0" linkid="pollywheels" url="../pollywheels.html" />
+		<spacer height="1.5" color="0x3EB520" />
+		<tier2 label="Pet Pals" index="2_1" linkid="petpals" url="../pets.html" />
+		<!--<tier2 label="Soccer Game" index="2_1" linkid="soccer" url="/garden/soccer/" />-->
+		<spacer height="1.5" color="0x3EB520" />
+		<tier2 label="Flower Surprise" index="2_2" linkid="flowersurprise" url="../flower.html" />
+	</tier1>
+	<spacer height="2" color="0xFFFFFF" />
+	<tier1 label="Glamour Mansion" index="3" linkid="mansion" url="../house.html">
+		<tier2 label="Kooky Kitchen" index="3_0" linkid="kitchen" url="../kitchen.html" />
+		<spacer height="1.5" color="0xE50088" />
+		<tier2 label="Polly's Mailbox" index="3_1" linkid="mailbox" url="../mailbox.html" />
+		<spacer height="1.5" color="0xE50088" />
+		<tier2 label="Beautiful Bedroom" index="3_2" linkid="bedroom" url="../decorate.html" />
+	</tier1>
+	<spacer height="2" color="0xFFFFFF" />
+	<tier1 label="Polly Mall" index="4" linkid="mall" url="../mall.html" >
+		<tier2 label="Toy Shop" index="4_0" linkid="toyshop" url="../toyshop.html" />
+		<spacer height="1.5" color="0xEBB601" />
+		<tier2 label="Hair Stylin' Salon" index="4_1" linkid="salon" url="../hair.html" />
+		<spacer height="1.5" color="0xEBB601" />
+		<tier2 label="Wacky Wardrobe" index="4_2" linkid="wackywardrobe" url="../fashion.html" />
+	</tier1>
+	<spacer height="2" color="0xFFFFFF" />
+	<tier1 label="Groovy Lagoon" index="5" linkid="lagoon" url="../sea.html" >
+		<tier2 label="Pool Party" index="5_0" linkid="poolparty" url="../pool.html" />
+		<spacer height="1.5" color="0x408AFA" />
+		<tier2 label="Dolphin Game" index="5_1" linkid="dolphin" url="../dolphin.html" />
+		<spacer height="1.5" color="0x408AFA" />
+		<tier2 label="Cool Creatures" index="5_2" linkid="coolcreatures" url="../animals.html" />
+		
+	</tier1>
+	<spacer height="2" color="0xFFFFFF" />
+	<tier1 label="Jewel Hunt" index="6" linkid="jewelhunt" url="../treasure.html" />
+</navigation>

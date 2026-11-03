@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<themes>
+	<theme	label="rock" 
+			stage="themes/rock_stage.swf"
+			bandstand="themes/rock_bandstand.swf"
+			shopURL="/mall/toyshop/"
+			exitTrackTitle="Games-Rock Makeover-Shop Click"
+			exitTrackURI="/games/rock_makeover/shop_click.ftrk"/>
+	<theme	label="tiki"
+			stage="themes/tiki_stage.swf"
+			bandstand="themes/tiki_bandstand.swf"
+			shopURL="/mall/toyshop"
+			exitTrackTitle="Games-Rock Makeover-Shop Click"
+			exitTrackURI="/games/rock_makeover/shop_click.ftrk"/>
+	<theme	label="icecream"
+			stage="themes/icecream_stage.swf"
+			bandstand="themes/icecream_bandstand.swf"
+			shopURL="/mall/toyshop/"
+			exitTrackTitle="Games-Rock Makeover-Shop Click"
+			exitTrackURI="/games/rock_makeover/shop_click.ftrk"/>
+</themes>
