@@ -57,6 +57,7 @@ GAMES.forEach(g => {
   if (g.icon) {
     const img = document.createElement("img");
     img.src = g.icon; img.alt = g.name;
+    if (g.iconFit) img.style.objectFit = g.iconFit;
     a.appendChild(img);
   } else {
     const ph = document.createElement("div");

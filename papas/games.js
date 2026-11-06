@@ -82,5 +82,12 @@ const GAMES = [
     "name": "Papa's Scooperia",
     "swf": "games/scooperia.swf",
     "icon": "icons/scooperia.jpg"
+  },
+  {
+    "id": "mocharia",
+    "name": "Papa's Mocharia Deluxe",
+    "swf": "games/mocharia.swf",
+    "icon": "icons/mocharia.jpg",
+    "iconFit": "contain"
   }
 ];
