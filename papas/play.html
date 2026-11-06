@@ -8,12 +8,29 @@
 <title>Papas Gameria</title>
 <style>
   html, body { margin:0; height:100%; background:#000; overscroll-behavior:none; font-family:'Courier New',monospace; }
-  #bar { height:48px; display:flex; align-items:center; gap:12px; padding:0 12px; background:#1f1b2e; }
+  #bar { height:48px; display:flex; align-items:center; gap:8px; box-sizing:border-box;
+         padding:0 max(10px, env(safe-area-inset-right)) 0 max(10px, env(safe-area-inset-left)); background:#1f1b2e; }
   #bar a, #bar button { color:#d77bff; text-decoration:none; font:inherit; font-size:14px; background:none;
-        border:1px solid #d77bff55; border-radius:8px; padding:6px 10px; cursor:pointer; }
-  #bar a:hover, #bar button:hover { color:#fff; border-color:#ed37bc; }
-  #title { flex:1; text-align:center; color:#fff; font-size:15px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+         border:1px solid #d77bff66; border-radius:8px; padding:7px 10px; cursor:pointer; white-space:nowrap; flex:none; }
+  #title { flex:1; min-width:0; text-align:center; color:#fff; font-size:14px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
   #stage { width:100%; height:calc(100vh - 48px); height:calc(100dvh - 48px); touch-action:none; }
+  body.immersive #bar { display:none; }
+  body.immersive #stage { position:fixed; inset:0; width:100%; height:100vh; height:100dvh; z-index:1; }
+  .fab { display:none; position:fixed; z-index:30; right:max(8px, env(safe-area-inset-right)); width:40px; height:40px;
+         border-radius:50%; border:1px solid #fff6; background:#000a; color:#fff; font-size:18px; opacity:.6; padding:0; }
+  #exit { top:max(8px, env(safe-area-inset-top)); }
+  #kbfab { top:calc(max(8px, env(safe-area-inset-top)) + 48px); }
+  body.immersive .fab { display:block; }
+  #kb { display:none; position:fixed; z-index:50; left:0; right:0; bottom:0; box-sizing:border-box;
+        padding:6px 6px calc(6px + env(safe-area-inset-bottom)); background:#1f1b2eee;
+        user-select:none; -webkit-user-select:none; }
+  #kb.open { display:block; }
+  .krow { display:flex; gap:4px; margin-bottom:4px; justify-content:center; }
+  .key { flex:1; max-width:56px; height:40px; border-radius:8px; border:1px solid #d77bff66; background:#2b2540;
+         color:#fff; font:inherit; font-size:16px; padding:0; touch-action:manipulation; }
+  .key.wide { flex:2; max-width:110px; }
+  .key.space { flex:6; max-width:320px; }
+  .key.on { background:#ed37bc; }
 </style>
 <script>
 if (sessionStorage.getItem("bunker_access") !== "true") { window.location.href = "/index.html"; }
@@ -25,11 +42,15 @@ window.RufflePlayer.config = { autoplay: "on", unmuteOverlay: "visible", splashS
 </head>
 <body>
 <div id="bar">
-  <a href="index.html">&larr; All games</a>
+  <a href="index.html">&larr; Games</a>
   <div id="title">Loading...</div>
-  <button id="fs" hidden>Fullscreen</button>
+  <button id="typebtn">Type</button>
+  <button id="fsbtn">Full</button>
 </div>
 <div id="stage"></div>
+<button id="exit" class="fab" aria-label="Exit full screen">&#10005;</button>
+<button id="kbfab" class="fab" aria-label="Keyboard">&#9000;</button>
+<div id="kb"></div>
 <script>
 const id = new URLSearchParams(location.search).get("game");
 const game = GAMES.find(g => g.id === id);
@@ -39,19 +60,108 @@ if (!game) {
   document.title = game.name;
   document.getElementById("title").textContent = game.name;
   try { localStorage.setItem("papas_last", id); } catch (e) {}
+
   const stage = document.getElementById("stage");
-  const fs = document.getElementById("fs");
-  if (document.fullscreenEnabled) {
-    fs.hidden = false;
-    fs.onclick = () => stage.requestFullscreen();
-  }
+  const kb = document.getElementById("kb");
+  let player = null;
+
   window.addEventListener("load", () => {
     const ruffle = window.RufflePlayer.newest();
-    const player = ruffle.createPlayer();
+    player = ruffle.createPlayer();
     player.style.width = "100%";
     player.style.height = "100%";
     stage.appendChild(player);
     player.ruffle().load(game.swf);
+  });
+
+  // ---- full screen (real where supported, otherwise fill the viewport) ----
+  function setImmersive(on) {
+    document.body.classList.toggle("immersive", on);
+    const el = document.documentElement;
+    try {
+      if (on) {
+        const req = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (req) { const r = req.call(el); if (r && r.catch) r.catch(() => {}); }
+      } else if (document.fullscreenElement || document.webkitFullscreenElement) {
+        const ex = document.exitFullscreen || document.webkitExitFullscreen;
+        if (ex) ex.call(document);
+      }
+    } catch (e) {}
+  }
+  const onFsChange = () => {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) document.body.classList.remove("immersive");
+  };
+  document.addEventListener("fullscreenchange", onFsChange);
+  document.addEventListener("webkitfullscreenchange", onFsChange);
+  document.getElementById("fsbtn").onclick = () => setImmersive(true);
+  document.getElementById("exit").onclick = () => setImmersive(false);
+
+  // ---- on-screen keyboard that sends key presses to the game ----
+  document.getElementById("typebtn").onclick = () => kb.classList.toggle("open");
+  document.getElementById("kbfab").onclick = () => kb.classList.toggle("open");
+
+  function keyInfo(ch) {
+    if (ch === "Enter") return { key: "Enter", code: "Enter", keyCode: 13 };
+    if (ch === "Backspace") return { key: "Backspace", code: "Backspace", keyCode: 8 };
+    if (ch === " ") return { key: " ", code: "Space", keyCode: 32 };
+    if (/^[a-z]$/i.test(ch)) return { key: ch, code: "Key" + ch.toUpperCase(), keyCode: ch.toUpperCase().charCodeAt(0) };
+    if (/^[0-9]$/.test(ch)) return { key: ch, code: "Digit" + ch, keyCode: ch.charCodeAt(0) };
+    return { key: ch, code: "", keyCode: ch.charCodeAt(0) };
+  }
+  function sendKey(ch) {
+    const info = keyInfo(ch);
+    const target = player || document;
+    ["keydown", "keypress", "keyup"].forEach(type => {
+      if (type === "keypress" && info.key.length !== 1 && info.key !== "Enter") return;
+      target.dispatchEvent(new KeyboardEvent(type, {
+        key: info.key, code: info.code, keyCode: info.keyCode, which: info.keyCode,
+        charCode: type === "keypress" ? info.keyCode : 0,
+        bubbles: true, cancelable: true, composed: true
+      }));
+    });
+  }
+
+  let shift = false;
+  const letterKeys = [];
+  let shiftEl = null;
+  function relabel() {
+    letterKeys.forEach(k => { k.el.textContent = shift ? k.ch.toUpperCase() : k.ch; });
+    if (shiftEl) shiftEl.classList.toggle("on", shift);
+  }
+  const LAYOUT = [
+    "1234567890".split(""),
+    "qwertyuiop".split(""),
+    "asdfghjkl".split(""),
+    ["SHIFT"].concat("zxcvbnm".split(""), ["BACK"]),
+    ["HIDE", "SPACE", "ENTER"]
+  ];
+  LAYOUT.forEach(row => {
+    const r = document.createElement("div");
+    r.className = "krow";
+    row.forEach(k => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "key";
+      let action;
+      if (k === "SHIFT") { b.textContent = "\u21E7"; b.classList.add("wide"); shiftEl = b; action = () => { shift = !shift; relabel(); }; }
+      else if (k === "BACK") { b.textContent = "\u232B"; b.classList.add("wide"); action = () => sendKey("Backspace"); }
+      else if (k === "SPACE") { b.textContent = "space"; b.classList.add("space"); action = () => sendKey(" "); }
+      else if (k === "ENTER") { b.textContent = "\u21B5"; b.classList.add("wide"); action = () => sendKey("Enter"); }
+      else if (k === "HIDE") { b.textContent = "hide"; b.classList.add("wide"); action = () => kb.classList.remove("open"); }
+      else {
+        b.textContent = k;
+        letterKeys.push({ el: b, ch: k });
+        action = () => {
+          sendKey(/[a-z]/.test(k) && shift ? k.toUpperCase() : k);
+          if (shift) { shift = false; relabel(); }
+        };
+      }
+      // keep focus inside the game: act on pointerdown and block the focus change
+      b.addEventListener("mousedown", e => e.preventDefault());
+      b.addEventListener("pointerdown", e => { e.preventDefault(); action(); });
+      r.appendChild(b);
+    });
+    kb.appendChild(r);
   });
 }
 </script>
