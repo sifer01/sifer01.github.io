@@ -26,6 +26,10 @@
   .card .name { display:block; margin-top:8px; font-size:14px; color:#fff; }
   .badge { position:absolute; top:6px; right:6px; background:var(--pink); color:#fff; font-size:11px;
            padding:2px 8px; border-radius:999px; }
+  .cardwrap { display:flex; flex-direction:column; gap:6px; }
+  .reset { background:none; border:1px solid #d77bff44; color:#d77bffaa; border-radius:8px; padding:6px;
+           font:inherit; font-size:12px; cursor:pointer; }
+  .reset:hover { color:#fff; border-color:#ed37bc; }
 </style>
 </head>
 <body>
@@ -40,6 +44,7 @@
 <p class="sub">Pick a game to play</p>
 <div id="grid"></div>
 <script src="games.js"></script>
+<script src="cloudsave.js"></script>
 <script>
 if (sessionStorage.getItem("bunker_access") !== "true") { window.location.href = "/index.html"; }
 let last = null;
@@ -66,8 +71,30 @@ GAMES.forEach(g => {
     b.className = "badge"; b.textContent = "Last played";
     a.appendChild(b);
   }
-  grid.appendChild(a);
+  const wrap = document.createElement("div");
+  wrap.className = "cardwrap";
+  wrap.appendChild(a);
+  const rb = document.createElement("button");
+  rb.type = "button";
+  rb.className = "reset";
+  rb.textContent = "Reset saves";
+  rb.onclick = () => resetGame(g);
+  wrap.appendChild(rb);
+  grid.appendChild(wrap);
 });
+
+const cloudReady = window.PapasCloud ? window.PapasCloud.start().catch(() => {}) : Promise.resolve();
+
+async function resetGame(g) {
+  await cloudReady;
+  const names = window.PapasCloud ? window.PapasCloud.findSaves(g.id) : [];
+  if (!names.length) { alert("No saved games found for " + g.name + " on this device."); return; }
+  if (!confirm("Delete these " + g.name + " saves on EVERY device?\n\n" + names.join("\n") + "\n\nThis cannot be undone.")) return;
+  if (!confirm("Last chance: really delete the " + g.name + " saves?")) return;
+  const result = await window.PapasCloud.deleteKeys(names);
+  if (result === "cloud") alert(g.name + " saves deleted everywhere.");
+  else alert(g.name + " saves deleted on this device only, because the cloud could not be reached. They may come back next time you sync.");
+}
 </script>
 </body>
 </html>

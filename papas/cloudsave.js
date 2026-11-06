@@ -205,8 +205,8 @@
     var words = [gameId].concat(aliases || []).map(function (w) { return String(w).toLowerCase(); });
     var snap = snapshot(), out = [];
     Object.keys(snap).forEach(function (name) {
-      var n = name.toLowerCase();
-      if (n.replace(/[^a-z]/g, "") === "session") return;
+      var n = name.toLowerCase().replace(/[^a-z]/g, "");
+      if (n === "session") return;
       for (var i = 0; i < words.length; i++) {
         if (n.indexOf(words[i]) !== -1) { out.push(name); break; }
       }
