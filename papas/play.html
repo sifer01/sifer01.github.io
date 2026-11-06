@@ -39,12 +39,14 @@ window.RufflePlayer.config = { autoplay: "on", unmuteOverlay: "visible", splashS
 </script>
 <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 <script src="games.js"></script>
+<script src="cloudsave.js"></script>
 </head>
 <body>
 <div id="bar">
   <a href="index.html">&larr; Games</a>
   <div id="title">Loading...</div>
   <button id="typebtn">Type</button>
+  <button id="cloudbtn">☁</button>
   <button id="fsbtn">Full</button>
 </div>
 <div id="stage"></div>
@@ -65,7 +67,8 @@ if (!game) {
   const kb = document.getElementById("kb");
   let player = null;
 
-  window.addEventListener("load", () => {
+  window.addEventListener("load", async () => {
+    try { if (window.PapasCloud) await window.PapasCloud.start(); } catch (e) {}
     const ruffle = window.RufflePlayer.newest();
     player = ruffle.createPlayer();
     player.style.width = "100%";
@@ -95,6 +98,11 @@ if (!game) {
   document.addEventListener("webkitfullscreenchange", onFsChange);
   document.getElementById("fsbtn").onclick = () => setImmersive(true);
   document.getElementById("exit").onclick = () => setImmersive(false);
+  const cloudBtn = document.getElementById("cloudbtn");
+  if (window.PapasCloud) {
+    window.PapasCloud.onStatus = label => { cloudBtn.textContent = label; };
+    cloudBtn.onclick = () => window.PapasCloud.changePassphrase();
+  }
 
   // ---- on-screen keyboard that sends key presses to the game ----
   document.getElementById("typebtn").onclick = () => kb.classList.toggle("open");
