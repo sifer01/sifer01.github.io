@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Papas Gameria</title>
+<style>
+  :root { --bg:#0b0c10; --card:#1f1b2e; --pink:#ed37bc; --purple:#d77bff; }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; font-family:'Courier New',monospace; color:var(--purple);
+         background: radial-gradient(900px 500px at 50% -10%, #3a1a55 0%, var(--bg) 65%) fixed; }
+  .navbar { display:flex; flex-wrap:wrap; gap:8px 14px; padding:12px 16px; background:var(--card); }
+  .navbar a { color:var(--purple); text-decoration:none; font-size:14px; }
+  .navbar a:hover { color:#fff; text-decoration:underline; }
+  h1 { text-align:center; margin:28px 16px 4px; color:var(--pink); font-size:clamp(26px,6vw,44px); }
+  .sub { text-align:center; margin:0 16px 24px; opacity:.8; }
+  #grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px;
+          max-width:1100px; margin:0 auto; padding:0 16px 40px; }
+  .card { position:relative; display:block; text-decoration:none; color:inherit; background:var(--card);
+          border:2px solid transparent; border-radius:14px; padding:10px; text-align:center;
+          transition:transform .15s, border-color .15s, box-shadow .15s; -webkit-tap-highlight-color:transparent; }
+  .card:hover, .card:focus-visible { transform:translateY(-4px); border-color:var(--pink);
+          box-shadow:0 8px 24px rgba(237,55,188,.35); outline:none; }
+  .card img, .card .ph { width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; display:block; background:#2b2540; }
+  .card .ph { display:flex; align-items:center; justify-content:center; font-size:40px; color:var(--pink); }
+  .card .name { display:block; margin-top:8px; font-size:14px; color:#fff; }
+  .badge { position:absolute; top:6px; right:6px; background:var(--pink); color:#fff; font-size:11px;
+           padding:2px 8px; border-radius:999px; }
+</style>
+</head>
+<body>
+<div class="navbar">
+  <a href="/button.html">Panic Button</a>
+  <a href="/missingboyfriend.html">Missing Boyfriend Portal</a>
+  <a href="/cats.html">Unlimited Cat Gifs</a>
+  <a href="/pollypocket/">PrincessPolly Games</a>
+  <a href="/papas/">Papas Gameria</a>
+</div>
+<h1>Papas Gameria</h1>
+<p class="sub">Pick a game to play</p>
+<div id="grid"></div>
+<script src="games.js"></script>
+<script>
+if (sessionStorage.getItem("bunker_access") !== "true") { window.location.href = "/index.html"; }
+let last = null;
+try { last = localStorage.getItem("papas_last"); } catch (e) {}
+const grid = document.getElementById("grid");
+GAMES.forEach(g => {
+  const a = document.createElement("a");
+  a.className = "card";
+  a.href = "play.html?game=" + encodeURIComponent(g.id);
+  if (g.icon) {
+    const img = document.createElement("img");
+    img.src = g.icon; img.alt = g.name;
+    a.appendChild(img);
+  } else {
+    const ph = document.createElement("div");
+    ph.className = "ph"; ph.textContent = g.name.charAt(7) || "?";
+    a.appendChild(ph);
+  }
+  const n = document.createElement("span");
+  n.className = "name"; n.textContent = g.name;
+  a.appendChild(n);
+  if (g.id === last) {
+    const b = document.createElement("div");
+    b.className = "badge"; b.textContent = "Last played";
+    a.appendChild(b);
+  }
+  grid.appendChild(a);
+});
+</script>
+</body>
+</html>

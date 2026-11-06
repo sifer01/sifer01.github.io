@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Papas Gameria</title>
+<style>
+  html, body { margin:0; height:100%; background:#000; overscroll-behavior:none; font-family:'Courier New',monospace; }
+  #bar { height:48px; display:flex; align-items:center; gap:12px; padding:0 12px; background:#1f1b2e; }
+  #bar a, #bar button { color:#d77bff; text-decoration:none; font:inherit; font-size:14px; background:none;
+        border:1px solid #d77bff55; border-radius:8px; padding:6px 10px; cursor:pointer; }
+  #bar a:hover, #bar button:hover { color:#fff; border-color:#ed37bc; }
+  #title { flex:1; text-align:center; color:#fff; font-size:15px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  #stage { width:100%; height:calc(100vh - 48px); height:calc(100dvh - 48px); touch-action:none; }
+</style>
+<script>
+if (sessionStorage.getItem("bunker_access") !== "true") { window.location.href = "/index.html"; }
+window.RufflePlayer = window.RufflePlayer || {};
+window.RufflePlayer.config = { autoplay: "on", unmuteOverlay: "visible", splashScreen: false, letterbox: "on", quality: "best" };
+</script>
+<script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+<script src="games.js"></script>
+</head>
+<body>
+<div id="bar">
+  <a href="index.html">&larr; All games</a>
+  <div id="title">Loading...</div>
+  <button id="fs" hidden>Fullscreen</button>
+</div>
+<div id="stage"></div>
+<script>
+const id = new URLSearchParams(location.search).get("game");
+const game = GAMES.find(g => g.id === id);
+if (!game) {
+  location.replace("index.html");
+} else {
+  document.title = game.name;
+  document.getElementById("title").textContent = game.name;
+  try { localStorage.setItem("papas_last", id); } catch (e) {}
+  const stage = document.getElementById("stage");
+  const fs = document.getElementById("fs");
+  if (document.fullscreenEnabled) {
+    fs.hidden = false;
+    fs.onclick = () => stage.requestFullscreen();
+  }
+  window.addEventListener("load", () => {
+    const ruffle = window.RufflePlayer.newest();
+    const player = ruffle.createPlayer();
+    player.style.width = "100%";
+    player.style.height = "100%";
+    stage.appendChild(player);
+    player.ruffle().load(game.swf);
+  });
+}
+</script>
+</body>
+</html>
