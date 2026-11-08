@@ -1,0 +1,12 @@
+{
+  "name": "Papas Gameria",
+  "short_name": "Papas",
+  "start_url": "/papas/",
+  "scope": "/",
+  "display": "fullscreen",
+  "background_color": "#000000",
+  "theme_color": "#1f1b2e",
+  "icons": [
+    { "src": "icons/burgeria.jpg", "sizes": "300x300", "type": "image/jpeg" }
+  ]
+}

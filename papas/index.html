@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Papas">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/burgeria.jpg">
 <title>Papas Gameria</title>
 <style>
   :root { --bg:#0b0c10; --card:#1f1b2e; --pink:#ed37bc; --purple:#d77bff; }
@@ -46,7 +52,9 @@
 <script src="games.js"></script>
 <script src="cloudsave.js"></script>
 <script>
-if (sessionStorage.getItem("bunker_access") !== "true") { window.location.href = "/index.html"; }
+if (sessionStorage.getItem("bunker_access") !== "true") {
+  window.location.href = "/index.html?next=" + encodeURIComponent(location.pathname + location.search);
+}
 let last = null;
 try { last = localStorage.getItem("papas_last"); } catch (e) {}
 const grid = document.getElementById("grid");

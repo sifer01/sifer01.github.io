@@ -63,7 +63,9 @@
       if (input === SECRET_PHRASE) {
         // store flag in session so people can’t skip login
         sessionStorage.setItem("bunker_access", "true");
-        window.location.href = "button.html";
+        // go back to the page that sent you here (local paths only), otherwise the usual start page
+        const next = new URLSearchParams(location.search).get("next");
+        window.location.href = (next && /^\/[^\/\\]/.test(next)) ? next : "button.html";
       } else {
         document.getElementById("error").textContent = "Access Denied: Wrong phrase!";
       }

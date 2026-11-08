@@ -5,21 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Papas">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/burgeria.jpg">
 <title>Papas Gameria</title>
 <style>
   html, body { margin:0; height:100%; background:#000; overscroll-behavior:none; font-family:'Courier New',monospace; }
-  #bar { height:48px; display:flex; align-items:center; gap:8px; box-sizing:border-box;
+  #bar { height:48px; display:flex; align-items:center; gap:6px; box-sizing:border-box;
          padding:0 max(10px, env(safe-area-inset-right)) 0 max(10px, env(safe-area-inset-left)); background:#1f1b2e; }
   #bar a, #bar button { color:#d77bff; text-decoration:none; font:inherit; font-size:14px; background:none;
-         border:1px solid #d77bff66; border-radius:8px; padding:7px 10px; cursor:pointer; white-space:nowrap; flex:none; }
+         border:1px solid #d77bff66; border-radius:8px; padding:7px 8px; cursor:pointer; white-space:nowrap; flex:none; }
   #title { flex:1; min-width:0; text-align:center; color:#fff; font-size:14px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
   #stage { width:100%; height:calc(100vh - 48px); height:calc(100dvh - 48px); touch-action:none; }
   body.immersive #bar { display:none; }
-  body.immersive #stage { position:fixed; inset:0; width:100%; height:100vh; height:100dvh; z-index:1; }
-  .fab { display:none; position:fixed; z-index:30; right:max(8px, env(safe-area-inset-right)); width:40px; height:40px;
-         border-radius:50%; border:1px solid #fff6; background:#000a; color:#fff; font-size:18px; opacity:.6; padding:0; }
+  /* full screen: keep the game clear of the iPhone notch and rounded corners */
+  body.immersive #stage { position:fixed; top:0; bottom:0; left:env(safe-area-inset-left, 0px); right:env(safe-area-inset-right, 0px);
+         width:auto; height:auto; z-index:1; }
+  /* floating buttons sit in the right-hand notch gutter when there is one */
+  .fab { display:none; position:fixed; z-index:30; right:max(6px, calc((env(safe-area-inset-right, 0px) - 40px) / 2));
+         width:40px; height:40px; border-radius:50%; border:1px solid #fff6; background:#000a; color:#fff; font-size:18px; opacity:.6; padding:0; }
   #exit { top:max(8px, env(safe-area-inset-top)); }
   #kbfab { top:calc(max(8px, env(safe-area-inset-top)) + 48px); }
+  #fitfab { top:calc(max(8px, env(safe-area-inset-top)) + 96px); }
   body.immersive .fab { display:block; }
   #kb { display:none; position:fixed; z-index:50; left:0; right:0; bottom:0; box-sizing:border-box;
         padding:6px 6px calc(6px + env(safe-area-inset-bottom)); background:#1f1b2eee;
@@ -31,9 +39,19 @@
   .key.wide { flex:2; max-width:110px; }
   .key.space { flex:6; max-width:320px; }
   .key.on { background:#ed37bc; }
+  #tip { display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:1000; background:rgba(0,0,0,.85);
+         align-items:center; justify-content:center; padding:16px; box-sizing:border-box; }
+  #tip.open { display:flex; }
+  #tip .box { background:#1f1b2e; color:#d77bff; border:1px solid #d77bff; border-radius:12px; padding:18px;
+         max-width:420px; width:100%; box-sizing:border-box; line-height:1.4; font-size:15px; }
+  #tip b { color:#fff; }
+  #tip button { display:block; width:100%; margin-top:14px; padding:10px; border-radius:8px; border:1px solid #d77bff66;
+         font:inherit; font-size:15px; color:#fff; background:#b53aa1; }
 </style>
 <script>
-if (sessionStorage.getItem("bunker_access") !== "true") { window.location.href = "/index.html"; }
+if (sessionStorage.getItem("bunker_access") !== "true") {
+  window.location.href = "/index.html?next=" + encodeURIComponent(location.pathname + location.search);
+}
 window.RufflePlayer = window.RufflePlayer || {};
 window.RufflePlayer.config = { autoplay: "on", unmuteOverlay: "visible", splashScreen: false, letterbox: "on", quality: "best" };
 </script>
@@ -47,12 +65,22 @@ window.RufflePlayer.config = { autoplay: "on", unmuteOverlay: "visible", splashS
   <div id="title">Loading...</div>
   <button id="typebtn">Type</button>
   <button id="cloudbtn">☁</button>
+  <button id="fitbtn">Fit</button>
   <button id="fsbtn">Full</button>
 </div>
 <div id="stage"></div>
 <button id="exit" class="fab" aria-label="Exit full screen">&#10005;</button>
 <button id="kbfab" class="fab" aria-label="Keyboard">&#9000;</button>
+<button id="fitfab" class="fab" aria-label="Fit or stretch the game">&#10530;</button>
 <div id="kb"></div>
+<div id="tip">
+  <div class="box">
+    <b>iPhone Safari can't hide its own bars.</b><br><br>
+    For true full screen: tap the <b>Share</b> button (the square with an arrow), choose
+    <b>Add to Home Screen</b>, then open Papas from the new icon on your home screen.
+    <button type="button" id="tipok">Got it</button>
+  </div>
+</div>
 <script>
 const id = new URLSearchParams(location.search).get("game");
 const game = GAMES.find(g => g.id === id);
@@ -66,6 +94,38 @@ if (!game) {
   const stage = document.getElementById("stage");
   const kb = document.getElementById("kb");
   let player = null;
+  const mq = q => (window.matchMedia ? window.matchMedia(q) : { matches: false });
+
+  // ---- Fit (normal shape, black bars) or Stretch (fill the screen) ----
+  const SCALE_KEY = "papas_scale";
+  let scaleMode = null;
+  try { scaleMode = localStorage.getItem(SCALE_KEY); } catch (e) {}
+  if (scaleMode !== "fit" && scaleMode !== "stretch") scaleMode = mq("(pointer: coarse)").matches ? "stretch" : "fit";
+  const fitBtn = document.getElementById("fitbtn");
+  const fitFab = document.getElementById("fitfab");
+  function showScale() {
+    fitBtn.textContent = scaleMode === "stretch" ? "Stretch" : "Fit";
+    fitFab.title = scaleMode === "stretch" ? "Stretched to fill (tap to fit)" : "Fitted (tap to stretch)";
+  }
+  showScale();
+
+  // Ruffle only reads the scale mode when a game loads, so switching reloads the game.
+  function loadGame() {
+    if (!player) return;
+    const stretch = scaleMode === "stretch";
+    player.ruffle().load({ url: game.swf, scale: stretch ? "exactfit" : "showAll", forceScale: stretch });
+  }
+  function toggleScale() {
+    const next = scaleMode === "stretch" ? "fit" : "stretch";
+    const ask = next === "stretch" ? "Stretch the game to fill the screen?" : "Show the game in its normal shape?";
+    if (player && !confirm(ask + "\n\nThis restarts the game. Saved days are kept, but the day you're playing now is lost.")) return;
+    scaleMode = next;
+    try { localStorage.setItem(SCALE_KEY, next); } catch (e) {}
+    showScale();
+    loadGame();
+  }
+  fitBtn.onclick = toggleScale;
+  fitFab.onclick = toggleScale;
 
   window.addEventListener("load", async () => {
     try { if (window.PapasCloud) await window.PapasCloud.start(); } catch (e) {}
@@ -74,30 +134,79 @@ if (!game) {
     player.style.width = "100%";
     player.style.height = "100%";
     stage.appendChild(player);
-    player.ruffle().load(game.swf);
+    loadGame();
   });
 
-  // ---- full screen (real where supported, otherwise fill the viewport) ----
-  function setImmersive(on) {
-    document.body.classList.toggle("immersive", on);
+  // ---- full screen layout ----
+  // On a phone held sideways the bar hides by itself. "Full" also asks for real
+  // full screen where the browser allows it (not on iPhone Safari).
+  const phoneLandscape = mq("(orientation: landscape) and (max-height: 500px) and (pointer: coarse)");
+  let userFull = false;   // pressed Full
+  let userExited = false; // pressed the X while sideways; bar stays until the next rotation
+  function applyLayout() {
+    document.body.classList.toggle("immersive", userFull || (phoneLandscape.matches && !userExited));
+  }
+  function onRotate() { userExited = false; applyLayout(); }
+  if (phoneLandscape.addEventListener) phoneLandscape.addEventListener("change", onRotate);
+  else if (phoneLandscape.addListener) phoneLandscape.addListener(onRotate);
+  applyLayout();
+
+  const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  const fsSupported = () => !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+  const isHomeScreenApp = () => navigator.standalone === true ||
+    mq("(display-mode: standalone)").matches || mq("(display-mode: fullscreen)").matches;
+  function lockLandscape() {
+    try { const o = screen.orientation; if (o && o.lock) o.lock("landscape").catch(() => {}); } catch (e) {}
+  }
+  function unlockOrientation() {
+    try { const o = screen.orientation; if (o && o.unlock) o.unlock(); } catch (e) {}
+  }
+
+  function enterFull() {
+    userFull = true;
+    userExited = false;
+    applyLayout();
     const el = document.documentElement;
     try {
-      if (on) {
-        const req = el.requestFullscreen || el.webkitRequestFullscreen;
-        if (req) { const r = req.call(el); if (r && r.catch) r.catch(() => {}); }
-      } else if (document.fullscreenElement || document.webkitFullscreenElement) {
+      const req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) {
+        const r = req.call(el);
+        if (r && r.then) r.then(lockLandscape, () => {}); else lockLandscape();
+      }
+    } catch (e) {}
+    if (!fsSupported() && !isHomeScreenApp()) showHomeScreenTip();
+  }
+  function exitFull() {
+    userFull = false;
+    userExited = phoneLandscape.matches;
+    applyLayout();
+    unlockOrientation();
+    try {
+      if (isFs()) {
         const ex = document.exitFullscreen || document.webkitExitFullscreen;
-        if (ex) ex.call(document);
+        if (ex) { const r = ex.call(document); if (r && r.catch) r.catch(() => {}); }
       }
     } catch (e) {}
   }
   const onFsChange = () => {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) document.body.classList.remove("immersive");
+    if (!isFs()) { userFull = false; unlockOrientation(); applyLayout(); }
   };
   document.addEventListener("fullscreenchange", onFsChange);
   document.addEventListener("webkitfullscreenchange", onFsChange);
-  document.getElementById("fsbtn").onclick = () => setImmersive(true);
-  document.getElementById("exit").onclick = () => setImmersive(false);
+  document.getElementById("fsbtn").onclick = enterFull;
+  document.getElementById("exit").onclick = exitFull;
+
+  // iPhone Safari has no real full screen; a Home Screen icon is the only way to hide its bars.
+  const tip = document.getElementById("tip");
+  function showHomeScreenTip() {
+    try { if (localStorage.getItem("papas_a2hs_tip")) return; } catch (e) {}
+    tip.classList.add("open");
+  }
+  document.getElementById("tipok").onclick = () => {
+    try { localStorage.setItem("papas_a2hs_tip", "1"); } catch (e) {}
+    tip.classList.remove("open");
+  };
+
   const cloudBtn = document.getElementById("cloudbtn");
   if (window.PapasCloud) {
     window.PapasCloud.onStatus = label => { cloudBtn.textContent = label; };
@@ -151,10 +260,10 @@ if (!game) {
       b.type = "button";
       b.className = "key";
       let action;
-      if (k === "SHIFT") { b.textContent = "\u21E7"; b.classList.add("wide"); shiftEl = b; action = () => { shift = !shift; relabel(); }; }
-      else if (k === "BACK") { b.textContent = "\u232B"; b.classList.add("wide"); action = () => sendKey("Backspace"); }
+      if (k === "SHIFT") { b.textContent = "⇧"; b.classList.add("wide"); shiftEl = b; action = () => { shift = !shift; relabel(); }; }
+      else if (k === "BACK") { b.textContent = "⌫"; b.classList.add("wide"); action = () => sendKey("Backspace"); }
       else if (k === "SPACE") { b.textContent = "space"; b.classList.add("space"); action = () => sendKey(" "); }
-      else if (k === "ENTER") { b.textContent = "\u21B5"; b.classList.add("wide"); action = () => sendKey("Enter"); }
+      else if (k === "ENTER") { b.textContent = "↵"; b.classList.add("wide"); action = () => sendKey("Enter"); }
       else if (k === "HIDE") { b.textContent = "hide"; b.classList.add("wide"); action = () => kb.classList.remove("open"); }
       else {
         b.textContent = k;
