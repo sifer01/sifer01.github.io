@@ -17,7 +17,8 @@
   #bar a, #bar button { color:#d77bff; text-decoration:none; font:inherit; font-size:14px; background:none;
          border:1px solid #d77bff66; border-radius:8px; padding:7px 8px; cursor:pointer; white-space:nowrap; flex:none; }
   #title { flex:1; min-width:0; text-align:center; color:#fff; font-size:14px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-  #stage { width:100%; height:calc(100vh - 48px); height:calc(100dvh - 48px); touch-action:none; }
+  #stage { width:100%; height:calc(100vh - 48px); height:calc(100dvh - 48px); touch-action:none;
+         display:flex; align-items:center; justify-content:center; overflow:hidden; }
   body.immersive #bar { display:none; }
   /* full screen: keep the game clear of the iPhone notch and rounded corners */
   body.immersive #stage { position:fixed; top:0; bottom:0; left:env(safe-area-inset-left, 0px); right:env(safe-area-inset-right, 0px);
@@ -96,45 +97,64 @@ if (!game) {
   let player = null;
   const mq = q => (window.matchMedia ? window.matchMedia(q) : { matches: false });
 
-  // ---- Fit (normal shape, black bars) or Stretch (fill the screen) ----
-  const SCALE_KEY = "papas_scale";
-  let scaleMode = null;
-  try { scaleMode = localStorage.getItem(SCALE_KEY); } catch (e) {}
-  if (scaleMode !== "fit" && scaleMode !== "stretch") scaleMode = mq("(pointer: coarse)").matches ? "stretch" : "fit";
+  // ---- game shape: Fit (normal), Wide (a little stretched), Stretch (fill the screen) ----
+  // Ruffle always stretches the game to fill its box; the box's shape decides how
+  // stretched the game looks. MAX is how much wider than normal the game may get.
+  const VIEW_KEY = "papas_view";
+  const VIEWS = ["fit", "wide", "stretch"];
+  const MAX = { fit: 1, wide: 1.2, stretch: Infinity };
+  const LABEL = { fit: "Fit", wide: "Wide", stretch: "Stretch" };
+  let view = null;
+  try { view = localStorage.getItem(VIEW_KEY); } catch (e) {}
+  if (VIEWS.indexOf(view) === -1) view = mq("(pointer: coarse)").matches ? "wide" : "fit";
   const fitBtn = document.getElementById("fitbtn");
   const fitFab = document.getElementById("fitfab");
-  function showScale() {
-    fitBtn.textContent = scaleMode === "stretch" ? "Stretch" : "Fit";
-    fitFab.title = scaleMode === "stretch" ? "Stretched to fill (tap to fit)" : "Fitted (tap to stretch)";
+  function showView() {
+    const next = VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length];
+    fitBtn.textContent = LABEL[view];
+    fitFab.title = LABEL[view] + " (tap for " + LABEL[next] + ")";
   }
-  showScale();
+  showView();
 
-  // Ruffle only reads the scale mode when a game loads, so switching reloads the game.
-  function loadGame() {
+  function nativeAspect() {
+    try {
+      const m = player.ruffle().metadata;
+      if (m && m.width > 0 && m.height > 0) return m.width / m.height;
+    } catch (e) {}
+    return 4 / 3;
+  }
+  function sizePlayer() {
     if (!player) return;
-    const stretch = scaleMode === "stretch";
-    player.ruffle().load({ url: game.swf, scale: stretch ? "exactfit" : "showAll", forceScale: stretch });
+    const w = stage.clientWidth, h = stage.clientHeight;
+    if (!w || !h) return;
+    const native = nativeAspect();
+    // never narrower than the game's own shape, never wider than MAX allows or the screen has room for
+    const ar = Math.max(native, Math.min(w / h, native * MAX[view]));
+    const pw = w / h > ar ? h * ar : w;
+    const ph = w / h > ar ? h : w / ar;
+    player.style.width = Math.round(pw) + "px";
+    player.style.height = Math.round(ph) + "px";
   }
-  function toggleScale() {
-    const next = scaleMode === "stretch" ? "fit" : "stretch";
-    const ask = next === "stretch" ? "Stretch the game to fill the screen?" : "Show the game in its normal shape?";
-    if (player && !confirm(ask + "\n\nThis restarts the game. Saved days are kept, but the day you're playing now is lost.")) return;
-    scaleMode = next;
-    try { localStorage.setItem(SCALE_KEY, next); } catch (e) {}
-    showScale();
-    loadGame();
+  function cycleView() {
+    view = VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length];
+    try { localStorage.setItem(VIEW_KEY, view); } catch (e) {}
+    showView();
+    sizePlayer();
   }
-  fitBtn.onclick = toggleScale;
-  fitFab.onclick = toggleScale;
+  fitBtn.onclick = cycleView;
+  fitFab.onclick = cycleView;
+  if (window.ResizeObserver) new ResizeObserver(sizePlayer).observe(stage);
+  else window.addEventListener("resize", sizePlayer);
 
   window.addEventListener("load", async () => {
     try { if (window.PapasCloud) await window.PapasCloud.start(); } catch (e) {}
     const ruffle = window.RufflePlayer.newest();
     player = ruffle.createPlayer();
-    player.style.width = "100%";
-    player.style.height = "100%";
+    player.style.flex = "none";
+    player.addEventListener("loadedmetadata", sizePlayer);
     stage.appendChild(player);
-    loadGame();
+    sizePlayer();
+    player.ruffle().load({ url: game.swf, scale: "exactfit", forceScale: true });
   });
 
   // ---- full screen layout ----
